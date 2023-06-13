@@ -1,3 +1,5 @@
+import { FormEvent, useState } from 'react';
+
 const initialItems = [
   { id: 1, description: 'Passports', quantity: 2, packed: false },
   { id: 2, description: 'Socks', quantity: 12, packed: true },
@@ -15,15 +17,61 @@ interface ItemProps {
   item: Item;
 }
 
+interface PackingListProps {
+  items: Item[];
+}
+
+interface FormProps {
+  handleAddItem: (item: Item) => void;
+}
+
 function Logo() {
   return <h1>🌴 Far Away 💼</h1>;
 }
 
-function Form() {
+function Form({ handleAddItem }: FormProps) {
+  const [description, setDescription] = useState('');
+  const [quantity, setQuantity] = useState(1);
+
+  function handleSubmit(evt: FormEvent) {
+    evt.preventDefault();
+
+    if (!description) return;
+
+    const newItem: Item = {
+      id: Math.random(),
+      description,
+      quantity,
+      packed: false,
+    };
+
+    handleAddItem(newItem);
+    console.log(newItem);
+    setDescription('');
+    setQuantity(1);
+  }
+
   return (
-    <div className='add-form'>
+    <form onSubmit={handleSubmit} className='add-form'>
       <h3>What do you need for your 😍 trip?</h3>
-    </div>
+      <select
+        value={quantity}
+        onChange={(evt) => setQuantity(Number(evt.target.value))}
+      >
+        {Array.from({ length: 20 }, (_, i) => i + 1).map((num) => (
+          <option key={num} value={num}>
+            {num}
+          </option>
+        ))}
+      </select>
+      <input
+        onChange={(evt) => setDescription(evt.target.value)}
+        value={description}
+        type='text'
+        placeholder='Item...'
+      />
+      <button>Add</button>
+    </form>
   );
 }
 
@@ -39,11 +87,11 @@ function Item({ item }: ItemProps) {
   );
 }
 
-function PackingList() {
+function PackingList({ items }: PackingListProps) {
   return (
     <div className='list'>
       <ul>
-        {initialItems.map((i) => (
+        {items.map((i) => (
           <Item key={i.id} item={i} />
         ))}
       </ul>
@@ -54,17 +102,23 @@ function PackingList() {
 function Stats() {
   return (
     <footer className='stats'>
-      💼<em>You have X items on your list, and you aleady packed X (X%)</em>🌞
+      💼<em>You have X items on your list, and you aleady packed X (X%)</em>
     </footer>
   );
 }
 
 function App() {
+  const [items, setItems] = useState<Item[]>([]);
+
+  function handleAddItem(item: Item) {
+    setItems((prevItems) => [...prevItems, item]);
+  }
+
   return (
     <div>
       <Logo />
-      <Form />
-      <PackingList />
+      <Form handleAddItem={handleAddItem} />
+      <PackingList items={items} />
       <Stats />
     </div>
   );
