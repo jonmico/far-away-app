@@ -1,11 +1,5 @@
 import { FormEvent, useState } from 'react';
 
-const initialItems = [
-  { id: 1, description: 'Passports', quantity: 2, packed: false },
-  { id: 2, description: 'Socks', quantity: 12, packed: true },
-  { id: 3, description: 'Charger', quantity: 1, packed: false },
-];
-
 type Item = {
   id: number;
   description: string;
@@ -15,10 +9,12 @@ type Item = {
 
 interface ItemProps {
   item: Item;
+  onDeleteItem: (id: number) => void;
 }
 
 interface PackingListProps {
   items: Item[];
+  onDeleteItem: (id: number) => void;
 }
 
 interface FormProps {
@@ -75,24 +71,24 @@ function Form({ handleAddItem }: FormProps) {
   );
 }
 
-function Item({ item }: ItemProps) {
-  const { description, quantity, packed } = item;
+function Item({ item, onDeleteItem }: ItemProps) {
+  const { description, quantity, packed, id } = item;
   return (
     <li>
       <span style={{ textDecoration: packed ? 'line-through' : '' }}>
         {quantity} {description}
       </span>
-      <button>❌</button>
+      <button onClick={() => onDeleteItem(id)}>❌</button>
     </li>
   );
 }
 
-function PackingList({ items }: PackingListProps) {
+function PackingList({ items, onDeleteItem }: PackingListProps) {
   return (
     <div className='list'>
       <ul>
         {items.map((i) => (
-          <Item key={i.id} item={i} />
+          <Item onDeleteItem={onDeleteItem} key={i.id} item={i} />
         ))}
       </ul>
     </div>
@@ -114,11 +110,15 @@ function App() {
     setItems((prevItems) => [...prevItems, item]);
   }
 
+  function handleDeleteItem(id: number) {
+    setItems((prevItems) => prevItems.filter((item) => item.id !== id));
+  }
+
   return (
     <div>
       <Logo />
       <Form handleAddItem={handleAddItem} />
-      <PackingList items={items} />
+      <PackingList items={items} onDeleteItem={handleDeleteItem} />
       <Stats />
     </div>
   );
