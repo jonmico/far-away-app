@@ -1,4 +1,4 @@
-import { ItemType } from './App';
+import { ItemType } from '../App';
 import { useState } from 'react';
 import Item from './Item';
 
