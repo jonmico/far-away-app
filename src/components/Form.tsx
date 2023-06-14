@@ -1,4 +1,4 @@
-import { ItemType } from './App';
+import { ItemType } from '../App';
 import { useState, FormEvent } from 'react';
 
 interface FormProps {
