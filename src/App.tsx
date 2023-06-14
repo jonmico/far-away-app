@@ -10,15 +10,21 @@ type Item = {
 interface ItemProps {
   item: Item;
   onDeleteItem: (id: number) => void;
+  onToggleItem: (id: number) => void;
 }
 
 interface PackingListProps {
   items: Item[];
   onDeleteItem: (id: number) => void;
+  onToggleItem: (id: number) => void;
 }
 
 interface FormProps {
   handleAddItem: (item: Item) => void;
+}
+
+interface StatsProps {
+  itemList: Item[];
 }
 
 function Logo() {
@@ -42,7 +48,6 @@ function Form({ handleAddItem }: FormProps) {
     };
 
     handleAddItem(newItem);
-    console.log(newItem);
     setDescription('');
     setQuantity(1);
   }
@@ -71,10 +76,17 @@ function Form({ handleAddItem }: FormProps) {
   );
 }
 
-function Item({ item, onDeleteItem }: ItemProps) {
+function Item({ item, onDeleteItem, onToggleItem }: ItemProps) {
   const { description, quantity, packed, id } = item;
   return (
     <li>
+      <input
+        type='checkbox'
+        checked={packed}
+        onChange={() => {
+          onToggleItem(id);
+        }}
+      />
       <span style={{ textDecoration: packed ? 'line-through' : '' }}>
         {quantity} {description}
       </span>
@@ -83,22 +95,43 @@ function Item({ item, onDeleteItem }: ItemProps) {
   );
 }
 
-function PackingList({ items, onDeleteItem }: PackingListProps) {
+function PackingList({ items, onDeleteItem, onToggleItem }: PackingListProps) {
   return (
     <div className='list'>
       <ul>
         {items.map((i) => (
-          <Item onDeleteItem={onDeleteItem} key={i.id} item={i} />
+          <Item
+            onToggleItem={onToggleItem}
+            onDeleteItem={onDeleteItem}
+            key={i.id}
+            item={i}
+          />
         ))}
       </ul>
     </div>
   );
 }
 
-function Stats() {
+function Stats({ itemList }: StatsProps) {
+  if (!itemList.length)
+    return (
+      <p className='stats'>
+        <em>Start adding some items to your packing list 🚀</em>
+      </p>
+    );
+
+  const numItems = itemList.length;
+  const numPacked = itemList.filter((item) => item.packed).length;
+  const percent = Math.round((numPacked / numItems) * 100);
+
   return (
     <footer className='stats'>
-      💼<em>You have X items on your list, and you aleady packed X (X%)</em>
+      <em>
+        {percent === 100
+          ? 'You got everything! Ready to go ✈'
+          : `💼 You have ${numItems} items on your list, and you aleady packed
+        ${numPacked} (${percent}%)`}
+      </em>
     </footer>
   );
 }
@@ -114,12 +147,22 @@ function App() {
     setItems((prevItems) => prevItems.filter((item) => item.id !== id));
   }
 
+  function handleToggleItem(id: number) {
+    setItems((prevItems) =>
+      prevItems.map((i) => (i.id === id ? { ...i, packed: !i.packed } : i))
+    );
+  }
+
   return (
     <div>
       <Logo />
       <Form handleAddItem={handleAddItem} />
-      <PackingList items={items} onDeleteItem={handleDeleteItem} />
-      <Stats />
+      <PackingList
+        items={items}
+        onDeleteItem={handleDeleteItem}
+        onToggleItem={handleToggleItem}
+      />
+      <Stats itemList={items} />
     </div>
   );
 }
